@@ -1,0 +1,9 @@
+/*
+    Database Tools
+    https://github.com/foilen/database-tools
+    Copyright (c) 2020 Foilen (http://foilen.com)
+
+    The MIT License
+    http://opensource.org/licenses/MIT
+
+ */

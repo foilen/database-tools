@@ -1,0 +1,51 @@
+plugins {
+  id 'application'
+  id 'java'
+}
+
+group = 'com.foilen'
+version = System.getenv('VERSION')?:'master-SNAPSHOT'
+
+repositories {
+  mavenLocal()
+  jcenter()
+  mavenCentral()
+  maven {
+    url 'https://dl.bintray.com/foilen/maven'
+  }
+}
+
+
+sourceCompatibility = 11
+
+dependencies {
+
+  // Misc
+  compile "args4j:args4j:$argsVersion"
+  compile "ch.qos.logback:logback-classic:$logbackVersion"
+  compile "com.foilen:jl-smalltools:$smalltoolsVersion"
+  compile "com.google.guava:guava:27.0.1-jre"
+  compile 'org.apache.commons:commons-lang3:3.6'
+  compile 'org.slf4j:slf4j-api:1.7.25'
+  
+  // Databases
+  compile "org.mariadb.jdbc:mariadb-java-client:$dbMariadbVersion"
+  
+  // Spring
+  compile "org.springframework.data:spring-data-jdbc:$springDataJdbcVersion"
+  
+  // Test
+  testCompileOnly 'junit:junit:4.13'
+  testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+  testRuntimeOnly "org.junit.vintage:junit-vintage-engine:$junitVersion"
+  testCompile 'org.junit.platform:junit-platform-commons:1.5.2'
+  testCompile 'org.junit.platform:junit-platform-engine:1.5.2'
+}
+
+test {
+  useJUnitPlatform()
+}
+
+application {
+  mainClassName = 'com.foilen.databasetools.Application'
+}

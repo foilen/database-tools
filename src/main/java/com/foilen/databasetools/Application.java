@@ -18,6 +18,7 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
 import com.foilen.databasetools.manage.Command;
+import com.foilen.databasetools.manage.MariadbCreateManageConfigCommand;
 import com.foilen.databasetools.manage.MariadbManageCommand;
 import com.foilen.smalltools.JavaEnvironmentValues;
 import com.foilen.smalltools.tools.AbstractBasics;
@@ -31,13 +32,16 @@ public class Application extends AbstractBasics {
         new Application().execute(args);
     }
 
-    private final List<Command> commands = Arrays.asList( //
+    private final List<Command<?>> commands = Arrays.asList( //
+            new MariadbCreateManageConfigCommand(), //
             new MariadbManageCommand() //
     );
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void execute(String[] args) {
 
         Command command = null;
+        Object options = null;
 
         try {
 
@@ -62,7 +66,7 @@ public class Application extends AbstractBasics {
                 return;
             }
             String commandName = arguments.remove(0);
-            Optional<Command> commandOptional = commands.stream().filter(c -> StringTools.safeEquals(commandName, c.getCommandName())).findFirst();
+            Optional<Command<?>> commandOptional = commands.stream().filter(c -> StringTools.safeEquals(commandName, c.getCommandName())).findFirst();
             if (commandOptional.isEmpty()) {
                 showUsage();
                 return;
@@ -70,7 +74,7 @@ public class Application extends AbstractBasics {
             command = commandOptional.get();
 
             // Check the command options
-            Object options = command.newOptions();
+            options = command.newOptions();
             CmdLineParser cmdLineParser = new CmdLineParser(options);
             try {
                 cmdLineParser.parseArgument(arguments);
@@ -93,7 +97,7 @@ public class Application extends AbstractBasics {
         }
 
         // Launch the command
-        command.execute();
+        command.execute(options);
 
     }
 

@@ -9,22 +9,25 @@
  */
 package com.foilen.databasetools.manage;
 
-import org.kohsuke.args4j.Option;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.kohsuke.args4j.Argument;
 
 /**
  * The arguments to pass to the application.
  */
 public class MariadbManageOptions {
 
-    @Option(name = "--managerConfigFile", usage = "The config file path for the manager service")
-    private String managerConfigFile;
+    @Argument(metaVar = "configFiles", usage = "The config files that will be merged/concatenated")
+    private List<String> configFiles = new ArrayList<String>();
 
-    public String getManagerConfigFile() {
-        return managerConfigFile;
+    public List<String> getConfigFiles() {
+        return configFiles;
     }
 
-    public void setManagerConfigFile(String managerConfigFile) {
-        this.managerConfigFile = managerConfigFile;
+    public void setConfigFiles(List<String> configFiles) {
+        this.configFiles = configFiles;
     }
 
 }

@@ -11,10 +11,10 @@ package com.foilen.databasetools.manage;
 
 import com.foilen.smalltools.tools.AbstractBasics;
 
-public class MariadbManageCommand extends AbstractBasics implements Command {
+public class MariadbManageCommand extends AbstractBasics implements Command<MariadbManageOptions> {
 
     @Override
-    public void execute() {
+    public void execute(MariadbManageOptions options) {
         // TODO MariadbManageCommand
         System.out.println("TODO");
 
@@ -22,11 +22,11 @@ public class MariadbManageCommand extends AbstractBasics implements Command {
 
     @Override
     public String getCommandName() {
-        return "manage-mariadb";
+        return "mariadb-manage";
     }
 
     @Override
-    public Object newOptions() {
+    public MariadbManageOptions newOptions() {
         return new MariadbManageOptions();
     }
 

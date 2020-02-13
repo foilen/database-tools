@@ -23,6 +23,7 @@ dependencies {
   // Misc
   compile "args4j:args4j:$argsVersion"
   compile "ch.qos.logback:logback-classic:$logbackVersion"
+  compile 'com.fasterxml.jackson.core:jackson-databind:2.9.1'
   compile "com.foilen:jl-smalltools:$smalltoolsVersion"
   compile "com.google.guava:guava:27.0.1-jre"
   compile 'org.apache.commons:commons-lang3:3.6'

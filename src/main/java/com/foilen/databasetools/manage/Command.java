@@ -9,12 +9,12 @@
  */
 package com.foilen.databasetools.manage;
 
-public interface Command {
+public interface Command<O> {
 
     /**
      * The command's code.
      */
-    void execute();
+    void execute(O options);
 
     /**
      * The name of the command name to use.
@@ -28,6 +28,6 @@ public interface Command {
      *
      * @return the option objects
      */
-    Object newOptions();
+    O newOptions();
 
 }

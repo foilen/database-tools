@@ -9,8 +9,6 @@
  */
 package com.foilen.databasetools.manage.mariadb;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,8 +21,8 @@ public class MariadbManagerConfigUserAndGrants extends AbstractBasics implements
     private String host;
     private String password;
     private String hashedPassword;
-    private List<String> globalGrants = new ArrayList<>();
-    private Map<String, List<String>> grantsByDatabase = new HashMap<>();
+    private List<String> globalGrants;
+    private Map<String, List<String>> grantsByDatabase;
 
     public MariadbManagerConfigUserAndGrants() {
     }
@@ -94,6 +92,10 @@ public class MariadbManagerConfigUserAndGrants extends AbstractBasics implements
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String toFullName() {
+        return "'" + name + "'@'" + host + "'";
     }
 
 }

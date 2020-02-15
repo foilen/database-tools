@@ -19,7 +19,7 @@ import org.kohsuke.args4j.Argument;
  */
 public class MariadbManageOptions {
 
-    @Argument(metaVar = "configFiles", usage = "The config files that will be merged/concatenated")
+    @Argument(metaVar = "configFiles", usage = "The config files of the different databases to manage")
     private List<String> configFiles = new ArrayList<String>();
 
     public List<String> getConfigFiles() {

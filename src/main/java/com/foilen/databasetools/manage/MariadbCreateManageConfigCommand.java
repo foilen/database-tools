@@ -11,7 +11,7 @@ package com.foilen.databasetools.manage;
 
 import com.foilen.databasetools.connection.MariadbConfigConnection;
 import com.foilen.databasetools.manage.mariadb.MariadbManagerConfig;
-import com.foilen.databasetools.queries.MariaDbQueries;
+import com.foilen.databasetools.queries.MariadbQueries;
 import com.foilen.smalltools.tools.AbstractBasics;
 import com.foilen.smalltools.tools.JsonTools;
 import com.google.common.base.Strings;
@@ -26,9 +26,9 @@ public class MariadbCreateManageConfigCommand extends AbstractBasics implements 
         MariadbManagerConfig config = new MariadbManagerConfig();
         config.setConnection(configConnection);
 
-        MariaDbQueries queries = new MariaDbQueries(configConnection);
-        config.setDatabases(queries.listNonSystemDatabases());
-        config.setUsersPermissions(queries.listUsers());
+        MariadbQueries queries = new MariadbQueries(configConnection);
+        config.setDatabases(queries.databasesListNonSystem());
+        config.setUsersPermissions(queries.usersList());
 
         if (Strings.isNullOrEmpty(options.getOutputFile())) {
             System.out.println(JsonTools.prettyPrint(config));

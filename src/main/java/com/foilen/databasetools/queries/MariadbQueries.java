@@ -37,25 +37,48 @@ import com.foilen.databasetools.manage.mariadb.MariadbManagerConfigUserAndGrants
 import com.foilen.smalltools.tools.AbstractBasics;
 import com.foilen.smalltools.tools.CollectionsTools;
 
-public class MariaDbQueries extends AbstractBasics {
+public class MariadbQueries extends AbstractBasics {
 
     private static final Set<String> SYSTEM_DATABASES = new HashSet<>(Arrays.asList("information_schema", "mariadb", "mysql", "performance_schema", "sys"));
+    private static final Map<String, String> GRANT_BY_BAD_GRANT = new HashMap<String, String>();
+
+    static {
+        GRANT_BY_BAD_GRANT.put("CREATE TMP TABLE", "CREATE TEMPORARY TABLES");
+    }
 
     private JdbcTemplate jdbcTemplate;
     private DataSource dataSource;
 
-    public MariaDbQueries(MariadbConfigConnection configConnection) {
+    public MariadbQueries(MariadbConfigConnection configConnection) {
         logger.info("Will use {}", configConnection);
         try {
             MariaDbPoolDataSource dataSource = new MariaDbPoolDataSource(configConnection.getHost(), configConnection.getPort(), "mysql");
             dataSource.setUser(configConnection.getUsername());
             dataSource.setPassword(configConnection.getPassword());
+            dataSource.setLoginTimeout(10);
 
             jdbcTemplate = new JdbcTemplate(dataSource);
             this.dataSource = dataSource;
         } catch (SQLException e) {
             throw new DataSourceLookupFailureException("Could not get the MariaDB datasource", e);
         }
+    }
+
+    public void databaseCreate(String database) {
+        logger.info("Create database {}", database);
+        jdbcTemplate.update("CREATE DATABASE " + database);
+    }
+
+    public void databaseDelete(String database) {
+        logger.info("Delete database {}", database);
+        jdbcTemplate.update("DROP DATABASE " + database);
+    }
+
+    public List<String> databasesListNonSystem() {
+        return jdbcTemplate.queryForList("SHOW DATABASES", String.class).stream() //
+                .filter(db -> !SYSTEM_DATABASES.contains(db)) //
+                .sorted() //
+                .collect(CollectionsTools.collectToArrayList());
     }
 
     private Map<String, String> getGrantByColumnName(ResultSet rs) throws SQLException {
@@ -67,20 +90,74 @@ public class MariaDbQueries extends AbstractBasics {
                 String grantName = columnName.toUpperCase();
                 grantName = grantName.substring(0, grantName.length() - 5);
                 grantName = grantName.replaceAll("_", " ");
+                if (GRANT_BY_BAD_GRANT.containsKey(grantName)) {
+                    grantName = GRANT_BY_BAD_GRANT.get(grantName);
+                }
                 grantByColumnName.put(columnName, grantName);
             }
         }
         return grantByColumnName;
     }
 
-    public List<String> listNonSystemDatabases() {
-        return jdbcTemplate.queryForList("SHOW DATABASES", String.class).stream() //
-                .filter(db -> !SYSTEM_DATABASES.contains(db)) //
-                .sorted() //
-                .collect(CollectionsTools.collectToArrayList());
+    private void processGrants(ResultSet rs, Map<String, String> grantByColumnName, Consumer<String> consumer) throws SQLException {
+        for (Entry<String, String> entry : grantByColumnName.entrySet()) {
+            String columnName = entry.getKey();
+            String grant = entry.getValue();
+
+            String yesNo = rs.getString(columnName);
+            if ("Y".equals(yesNo)) {
+                consumer.accept(grant);
+            }
+        }
     }
 
-    public List<MariadbManagerConfigUserAndGrants> listUsers() {
+    public void userCreate(String user) {
+        logger.info("Create user {}", user);
+        jdbcTemplate.update("CREATE USER " + user);
+    }
+
+    public void userDelete(String user) {
+        logger.info("Delete user {}", user);
+        jdbcTemplate.update("DROP USER " + user);
+    }
+
+    public void userPasswordUpdate(String user, String password) {
+        logger.info("Update user hashed password {}", user);
+        jdbcTemplate.update("ALTER USER " + user + "IDENTIFIED BY '" + password + "'");
+    }
+
+    public void userPasswordUpdateHash(String user, String hashedPassword) {
+        logger.info("Update user hashed password {}", user);
+        jdbcTemplate.update("ALTER USER " + user + "IDENTIFIED BY PASSWORD '" + hashedPassword + "'");
+    }
+
+    public void userPrivilegeDatabaseGrant(String user, String database, String privilege) {
+        logger.info("Grant for user {} on database {} the privilege {}", user, database, privilege);
+        jdbcTemplate.update("GRANT " + privilege + " ON `" + database + "`.* TO " + user);
+    }
+
+    public void userPrivilegeDatabaseRevoke(String user, String database, String privilege) {
+        logger.info("Revoke for user {} on database {} the privilege {}", user, database, privilege);
+        jdbcTemplate.update("REVOKE " + privilege + " ON `" + database + "`.* FROM " + user);
+    }
+
+    public void userPrivilegeGlobalGrant(String user, String privilege) {
+        logger.info("Grant for user {} globally the privilege {}", user, privilege);
+        jdbcTemplate.update("GRANT " + privilege + " ON *.* TO " + user);
+    }
+
+    public void userPrivilegeGlobalRevoke(String user, String privilege) {
+        logger.info("Revoke for user {} globally the privilege {}", user, privilege);
+        jdbcTemplate.update("REVOKE " + privilege + " ON *.* FROM " + user);
+
+    }
+
+    public void userPrivilegesFlush() {
+        logger.info("Flush privileges");
+        jdbcTemplate.update("FLUSH PRIVILEGES");
+    }
+
+    public List<MariadbManagerConfigUserAndGrants> usersList() {
 
         try (Connection connection = dataSource.getConnection()) {
         } catch (Exception e) {
@@ -100,12 +177,14 @@ public class MariaDbQueries extends AbstractBasics {
                         while (rs.next()) {
 
                             MariadbManagerConfigUserAndGrants user = new MariadbManagerConfigUserAndGrants(rs.getString("user"), rs.getString("host"));
+                            user.setGlobalGrants(new ArrayList<>());
+                            user.setGrantsByDatabase(new HashMap<>());
                             user.setHashedPassword(rs.getString("password"));
 
                             // Global grants
                             processGrants(rs, grantByColumnName, grant -> user.getGlobalGrants().add(grant));
 
-                            userAndGrantsByUser.put(user.getName() + "@" + user.getHost(), user);
+                            userAndGrantsByUser.put(user.toFullName(), user);
                         }
 
                         return userAndGrantsByUser;
@@ -127,8 +206,9 @@ public class MariaDbQueries extends AbstractBasics {
                     String username = rs.getString("user");
                     String userhost = rs.getString("host");
                     String database = rs.getString("db");
+                    String fullName = new MariadbManagerConfigUserAndGrants(username, userhost).toFullName();
 
-                    MariadbManagerConfigUserAndGrants user = userAndGrantsByUser.get(username + "@" + userhost);
+                    MariadbManagerConfigUserAndGrants user = userAndGrantsByUser.get(fullName);
                     if (user == null) {
                         logger.warn("The user {}@{} has privilege on database {}, but that user does not exist", username, userhost, database);
                         continue;
@@ -148,18 +228,6 @@ public class MariaDbQueries extends AbstractBasics {
         });
 
         return userAndGrantsByUser.values().stream().sorted().collect(Collectors.toList());
-    }
-
-    private void processGrants(ResultSet rs, Map<String, String> grantByColumnName, Consumer<String> consumer) throws SQLException {
-        for (Entry<String, String> entry : grantByColumnName.entrySet()) {
-            String columnName = entry.getKey();
-            String grant = entry.getValue();
-
-            String yesNo = rs.getString(columnName);
-            if ("Y".equals(yesNo)) {
-                consumer.accept(grant);
-            }
-        }
     }
 
 }

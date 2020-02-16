@@ -23,6 +23,7 @@ import com.foilen.databasetools.manage.MariadbManageCommand;
 import com.foilen.smalltools.JavaEnvironmentValues;
 import com.foilen.smalltools.tools.AbstractBasics;
 import com.foilen.smalltools.tools.ApplicationResourceUsageTools;
+import com.foilen.smalltools.tools.DirectoryTools;
 import com.foilen.smalltools.tools.LogbackTools;
 import com.foilen.smalltools.tools.StringTools;
 
@@ -47,6 +48,20 @@ public class Application extends AbstractBasics {
 
             List<String> arguments = new ArrayList<>();
             arguments.addAll(Arrays.asList(args));
+
+            // Check for a log path
+            System.setProperty("logDir", JavaEnvironmentValues.getWorkingDirectory());
+            int logDirPos = arguments.indexOf("--logDir");
+            if (logDirPos != -1) {
+                if (arguments.size() >= logDirPos + 1) {
+                    String logDir = arguments.get(logDirPos + 1);
+                    System.out.println("Saving logs in " + logDir);
+                    System.setProperty("logDir", logDir);
+                    DirectoryTools.createPath(logDir);
+                    arguments.remove(logDirPos);
+                    arguments.remove(logDirPos);
+                }
+            }
 
             // Check which logger to use
             boolean debug = arguments.remove("--debug");
@@ -104,6 +119,7 @@ public class Application extends AbstractBasics {
     private void showUsage() {
         System.out.println("Usage: <command> [options]");
         System.out.println("\noptions:");
+        System.out.println("\t--logDir : Where to store logs (default: working directory");
         System.out.println("\t--debug : To show DEBUG level loggers");
         System.out.println("\ncommands:");
         commands.forEach(c -> {

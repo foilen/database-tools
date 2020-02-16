@@ -122,7 +122,7 @@ public class MariadbQueries extends AbstractBasics {
     }
 
     public void userPasswordUpdate(String user, String password) {
-        logger.info("Update user hashed password {}", user);
+        logger.info("Update user password {}", user);
         jdbcTemplate.update("ALTER USER " + user + "IDENTIFIED BY '" + password + "'");
     }
 

@@ -9,6 +9,7 @@
  */
 package com.foilen.databasetools.manage.mariadb;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,20 +21,27 @@ import java.util.stream.Collectors;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 
 import com.foilen.databasetools.connection.MariadbConfigConnection;
+import com.foilen.databasetools.manage.exception.RetryLaterExceptionManager;
 import com.foilen.databasetools.queries.MariadbQueries;
+import com.foilen.smalltools.filesystemupdatewatcher.handler.OneFileUpdateNotifyer;
 import com.foilen.smalltools.listscomparator.ListComparatorHandler;
 import com.foilen.smalltools.listscomparator.ListsComparator;
 import com.foilen.smalltools.tools.AbstractBasics;
+import com.foilen.smalltools.tools.JsonTools;
 import com.foilen.smalltools.tools.StringTools;
 import com.foilen.smalltools.tools.ThreadNameStateTool;
 import com.foilen.smalltools.tools.ThreadTools;
 
 public class MariadbManageProcess extends AbstractBasics implements Runnable {
 
-    private MariadbManagerConfig mariadbManagerConfig;
+    private String configFile;
+    private boolean keepAlive;
 
-    public MariadbManageProcess(MariadbManagerConfig mariadbManagerConfig) {
-        this.mariadbManagerConfig = mariadbManagerConfig;
+    private AtomicBoolean process = new AtomicBoolean(true);
+
+    public MariadbManageProcess(String configFile, boolean keepAlive) {
+        this.configFile = configFile;
+        this.keepAlive = keepAlive;
     }
 
     private void applyAllDatabases(MariadbQueries queries, List<String> databases) {
@@ -158,7 +166,7 @@ public class MariadbManageProcess extends AbstractBasics implements Runnable {
             } else {
                 if (desiredUser.getPassword() != null) {
                     logger.info("[{}] has a desired password. Updating", fullName);
-                    queries.userPasswordUpdateHash(fullName, desiredUser.getPassword());
+                    queries.userPasswordUpdate(fullName, desiredUser.getPassword());
                     hadChanges.set(true);
                 }
             }
@@ -244,36 +252,99 @@ public class MariadbManageProcess extends AbstractBasics implements Runnable {
 
     }
 
+    private void execute() {
+
+        try {
+            // Load the config file
+            MariadbManagerConfig mariadbManagerConfig;
+            logger.info("Loading config file {}", configFile);
+            mariadbManagerConfig = JsonTools.readFromFile(configFile, MariadbManagerConfig.class);
+
+            // Change thread name
+            MariadbConfigConnection connection = mariadbManagerConfig.getConnection();
+
+            // Make the changes
+            MariadbQueries queries = new MariadbQueries(connection);
+            applyAllDatabases(queries, mariadbManagerConfig.getDatabases());
+            applyAllUsersAndGrants(queries, mariadbManagerConfig.getUsersToIgnore(), mariadbManagerConfig.getUsersPermissions());
+        } catch (CannotGetJdbcConnectionException e) {
+            throw new RetryLaterExceptionManager("Could not connect", 15000, e);
+        }
+
+    }
+
     @Override
     public void run() {
 
-        MariadbConfigConnection connection = mariadbManagerConfig.getConnection();
         ThreadNameStateTool threadNameStateTool = ThreadTools.nameThread() //
                 .clear() //
                 .setSeparator("-") //
                 .appendText("Manage") //
                 .appendText("MariaDB") //
-                .appendText(connection.getHost() + ":" + connection.getPort()) //
+                .appendText(configFile) //
                 .change();
         try {
+
+            // Check the config file changes when kept alive
+            if (keepAlive) {
+                logger.info("Start the file notifyer");
+                File config = new File(configFile);
+                @SuppressWarnings("resource")
+                OneFileUpdateNotifyer oneFileUpdateNotifyer = new OneFileUpdateNotifyer(config.getAbsolutePath(), fileName -> {
+                    logger.info("Config file changed. Update now");
+                    process.set(true);
+                });
+                oneFileUpdateNotifyer.initAutoUpdateSystem();
+            }
+
+            long lastExecution = 0;
             boolean retry = true;
-            while (retry) {
+            while (retry || keepAlive) {
+                retry = false;
+
+                // Wait 1 hours if keep alive
+                if (keepAlive) {
+                    long nextExecutionOn = lastExecution + 60 * 60 * 1000;
+
+                    if (!process.get()) {
+                        long waitFor = nextExecutionOn - System.currentTimeMillis();
+                        if (waitFor > 0) {
+                            logger.info("Wait for {}ms before the next execution", waitFor);
+                            while (waitFor > 0 && !process.get()) {
+                                ThreadTools.sleep(Math.min(waitFor, 5000));
+                                waitFor = nextExecutionOn - System.currentTimeMillis();
+                            }
+                            logger.info("End of wait");
+                        }
+                    }
+
+                }
+
+                // Execute
                 try {
-                    retry = false;
-                    MariadbQueries queries = new MariadbQueries(connection);
-                    applyAllDatabases(queries, mariadbManagerConfig.getDatabases());
-                    applyAllUsersAndGrants(queries, mariadbManagerConfig.getUsersToIgnore(), mariadbManagerConfig.getUsersPermissions());
-                } catch (CannotGetJdbcConnectionException e) {
-                    logger.warn("Problem managing. Will retry in 15 seconds", e);
+                    process.set(false);
+                    lastExecution = System.currentTimeMillis();
+                    execute();
+
+                } catch (RetryLaterExceptionManager e) {
+                    logger.warn("Problem managing: {}. Will retry in {} seconds", e.getMessage(), e.getRetryInMs());
                     retry = true;
-                    ThreadTools.sleep(15000);
+                    process.set(true);
+                    try {
+                        Thread.sleep(e.getRetryInMs());
+                    } catch (InterruptedException e1) {
+                    }
+
                 } catch (Exception e) {
                     logger.error("Problem managing", e);
                 }
             }
+
         } finally {
             logger.info("End of manager");
-            threadNameStateTool.revert();
+            if (threadNameStateTool != null) {
+                threadNameStateTool.revert();
+            }
         }
 
     }

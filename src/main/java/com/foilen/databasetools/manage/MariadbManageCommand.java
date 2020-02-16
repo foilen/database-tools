@@ -14,10 +14,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import com.foilen.databasetools.manage.mariadb.MariadbManageProcess;
-import com.foilen.databasetools.manage.mariadb.MariadbManagerConfig;
 import com.foilen.smalltools.tools.AbstractBasics;
 import com.foilen.smalltools.tools.ExecutorsTools;
-import com.foilen.smalltools.tools.JsonTools;
 
 public class MariadbManageCommand extends AbstractBasics implements Command<MariadbManageOptions> {
 
@@ -27,19 +25,7 @@ public class MariadbManageCommand extends AbstractBasics implements Command<Mari
         // Start all managers
         List<Future<?>> futures = new ArrayList<>();
         options.getConfigFiles().forEach(configFile -> {
-
-            // Load the config file
-            MariadbManagerConfig mariadbManagerConfig;
-            try {
-                logger.info("Loading config file {}", configFile);
-                mariadbManagerConfig = JsonTools.readFromFile(configFile, MariadbManagerConfig.class);
-            } catch (Exception e) {
-                logger.error("Problem loading the config file {}", configFile, e);
-                return;
-            }
-
-            // Start the process
-            futures.add(ExecutorsTools.getCachedDaemonThreadPool().submit(new MariadbManageProcess(mariadbManagerConfig)));
+            futures.add(ExecutorsTools.getCachedDaemonThreadPool().submit(new MariadbManageProcess(configFile, options.isKeepAlive())));
         });
 
         // Wait for all managers to end

@@ -96,4 +96,5 @@ publishing {
 
 application {
   mainClassName = 'com.foilen.databasetools.Application'
+  applicationDefaultJvmArgs = ['-Xmx200m']
 }

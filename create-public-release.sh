@@ -22,6 +22,7 @@ export VERSION=$1
 ./step-clean-compile.sh
 ./step-create-docker-image.sh
 ./step-upload-docker-image.sh
+./step-upload-bintray.sh
 ./step-git-tag.sh
 
 echo ----[ Operation completed successfully ]----

@@ -1,6 +1,9 @@
 plugins {
   id 'application'
+  id "com.jfrog.bintray" version "1.8.4"
   id 'java'
+  id 'maven'
+  id 'maven-publish'
 }
 
 group = 'com.foilen'
@@ -45,6 +48,50 @@ dependencies {
 
 test {
   useJUnitPlatform()
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  classifier = 'javadoc'
+  from javadoc.destinationDir
+}
+
+artifacts {
+  archives sourcesJar
+  archives javadocJar
+}
+
+bintray {
+  user = System.getenv('BINTRAY_USER')
+  key = System.getenv('BINTRAY_KEY')
+
+  publish = true
+
+  pkg {
+    repo = 'maven'
+    userOrg = 'foilen'
+    name = 'com.foilen:database-tools'
+    licenses = ['MIT']
+    vcsUrl = 'https://github.com/foilen/database-tools'
+  }
+
+  publications = ['MyPublication']
+}
+
+publishing {
+  publications {
+    MyPublication(MavenPublication) {
+      from components.java
+      artifact sourcesJar
+      artifact javadocJar
+      groupId 'com.foilen'
+      artifactId 'database-tools'
+    }
+  }
 }
 
 application {

@@ -9,7 +9,7 @@
  */
 package com.foilen.databasetools.manage;
 
-import com.foilen.databasetools.connection.MariadbConfigConnection;
+import com.foilen.databasetools.connection.JdbcUriConfigConnection;
 import com.foilen.databasetools.manage.mariadb.MariadbManagerConfig;
 import com.foilen.databasetools.queries.MariadbQueries;
 import com.foilen.smalltools.tools.AbstractBasics;
@@ -21,7 +21,7 @@ public class MariadbCreateManageConfigCommand extends AbstractBasics implements 
     @Override
     public void execute(MariadbCreateManageConfigOptions options) {
         MariadbManagerConfig databaseToConnectTo = JsonTools.readFromFile(options.getConnectionConfig(), MariadbManagerConfig.class);
-        MariadbConfigConnection configConnection = databaseToConnectTo.getConnection();
+        JdbcUriConfigConnection configConnection = databaseToConnectTo.getConnection();
 
         MariadbManagerConfig config = new MariadbManagerConfig();
         config.setConnection(configConnection);

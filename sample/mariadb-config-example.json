@@ -1,10 +1,7 @@
 {
-  "connection" : {
-    "host" : "localhost",
-    "port" : 3306,
-    "username" : "root",
-    "password" : "ABC"
-  },
+	"connection": {
+		"jdbcUri": "jdbc:mariadb://localhost:3306/mysql?user=root&password=ABC"
+	},
   "databases" : [ "potato" ],
   "usersToIgnore" : [ {
     "name" : "root",

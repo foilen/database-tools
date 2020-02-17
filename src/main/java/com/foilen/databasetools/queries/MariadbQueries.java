@@ -26,13 +26,12 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
-import org.mariadb.jdbc.MariaDbPoolDataSource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
-import org.springframework.jdbc.datasource.lookup.DataSourceLookupFailureException;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-import com.foilen.databasetools.connection.MariadbConfigConnection;
+import com.foilen.databasetools.connection.JdbcUriConfigConnection;
 import com.foilen.databasetools.manage.mariadb.MariadbManagerConfigUserAndGrants;
 import com.foilen.smalltools.tools.AbstractBasics;
 import com.foilen.smalltools.tools.CollectionsTools;
@@ -49,19 +48,12 @@ public class MariadbQueries extends AbstractBasics {
     private JdbcTemplate jdbcTemplate;
     private DataSource dataSource;
 
-    public MariadbQueries(MariadbConfigConnection configConnection) {
+    public MariadbQueries(JdbcUriConfigConnection configConnection) {
         logger.info("Will use {}", configConnection);
-        try {
-            MariaDbPoolDataSource dataSource = new MariaDbPoolDataSource(configConnection.getHost(), configConnection.getPort(), "mysql");
-            dataSource.setUser(configConnection.getUsername());
-            dataSource.setPassword(configConnection.getPassword());
-            dataSource.setLoginTimeout(10);
+        DriverManagerDataSource dataSource = new DriverManagerDataSource(configConnection.getJdbcUri());
 
-            jdbcTemplate = new JdbcTemplate(dataSource);
-            this.dataSource = dataSource;
-        } catch (SQLException e) {
-            throw new DataSourceLookupFailureException("Could not get the MariaDB datasource", e);
-        }
+        jdbcTemplate = new JdbcTemplate(dataSource);
+        this.dataSource = dataSource;
     }
 
     public void databaseCreate(String database) {

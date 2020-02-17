@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 
-import com.foilen.databasetools.connection.MariadbConfigConnection;
+import com.foilen.databasetools.connection.JdbcUriConfigConnection;
 import com.foilen.databasetools.manage.exception.RetryLaterExceptionManager;
 import com.foilen.databasetools.queries.MariadbQueries;
 import com.foilen.smalltools.filesystemupdatewatcher.handler.OneFileUpdateNotifyer;
@@ -261,7 +261,7 @@ public class MariadbManageProcess extends AbstractBasics implements Runnable {
             mariadbManagerConfig = JsonTools.readFromFile(configFile, MariadbManagerConfig.class);
 
             // Change thread name
-            MariadbConfigConnection connection = mariadbManagerConfig.getConnection();
+            JdbcUriConfigConnection connection = mariadbManagerConfig.getConnection();
 
             // Make the changes
             MariadbQueries queries = new MariadbQueries(connection);

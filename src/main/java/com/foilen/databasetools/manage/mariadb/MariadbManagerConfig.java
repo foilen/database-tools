@@ -12,17 +12,17 @@ package com.foilen.databasetools.manage.mariadb;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.foilen.databasetools.connection.MariadbConfigConnection;
+import com.foilen.databasetools.connection.JdbcUriConfigConnection;
 import com.foilen.smalltools.tools.AbstractBasics;
 
 public class MariadbManagerConfig extends AbstractBasics {
 
-    private MariadbConfigConnection connection = new MariadbConfigConnection();
+    private JdbcUriConfigConnection connection = new JdbcUriConfigConnection();
     private List<String> databases = new ArrayList<>();
     private List<MariadbManagerConfigUser> usersToIgnore = new ArrayList<>();
     private List<MariadbManagerConfigUserAndGrants> usersPermissions = new ArrayList<>();
 
-    public MariadbConfigConnection getConnection() {
+    public JdbcUriConfigConnection getConnection() {
         return connection;
     }
 
@@ -38,7 +38,7 @@ public class MariadbManagerConfig extends AbstractBasics {
         return usersToIgnore;
     }
 
-    public void setConnection(MariadbConfigConnection connection) {
+    public void setConnection(JdbcUriConfigConnection connection) {
         this.connection = connection;
     }
 

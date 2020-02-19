@@ -10,24 +10,25 @@
 package com.foilen.databasetools.manage;
 
 import com.foilen.databasetools.connection.JdbcUriConfigConnection;
-import com.foilen.databasetools.manage.mariadb.MariadbManagerConfig;
-import com.foilen.databasetools.queries.MariadbQueries;
+import com.foilen.databasetools.manage.mongodb.MongodbManagerConfig;
+import com.foilen.databasetools.queries.MongodbQueries;
 import com.foilen.smalltools.tools.AbstractBasics;
 import com.foilen.smalltools.tools.JsonTools;
 import com.google.common.base.Strings;
 
-public class MariadbCreateManageConfigCommand extends AbstractBasics implements Command<CommonCreateManageConfigOptions> {
+public class MongodbCreateManageConfigCommand extends AbstractBasics implements Command<CommonCreateManageConfigOptions> {
 
     @Override
     public void execute(CommonCreateManageConfigOptions options) {
-        MariadbManagerConfig databaseToConnectTo = JsonTools.readFromFile(options.getConnectionConfig(), MariadbManagerConfig.class);
+        MongodbManagerConfig databaseToConnectTo = JsonTools.readFromFile(options.getConnectionConfig(), MongodbManagerConfig.class);
         JdbcUriConfigConnection configConnection = databaseToConnectTo.getConnection();
-
-        MariadbManagerConfig config = new MariadbManagerConfig();
+        MongodbManagerConfig config = new MongodbManagerConfig();
         config.setConnection(configConnection);
 
-        MariadbQueries queries = new MariadbQueries(configConnection);
+        MongodbQueries queries = new MongodbQueries(configConnection);
         config.setDatabases(queries.databasesListNonSystem());
+        config.loadRoles(queries.rolesList());
+
         config.setUsersPermissions(queries.usersList());
 
         if (Strings.isNullOrEmpty(options.getOutputFile())) {
@@ -40,7 +41,7 @@ public class MariadbCreateManageConfigCommand extends AbstractBasics implements 
 
     @Override
     public String getCommandName() {
-        return "mariadb-create-manage";
+        return "mongodb-create-manage";
     }
 
     @Override

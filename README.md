@@ -74,3 +74,29 @@ docker run -ti \
   foilen/database-tools \
     mariadb-manage --configFiles /data/config.json --keepAlive
 ```
+
+# MongoDB
+
+## Create a manage configuration
+
+```
+# Create the connection details file
+cat > login.json << _EOF
+{
+  "connection": {
+    "jdbcUri": "jdbc:mongodb://root:ABC@172.17.0.1:27017"
+  }
+}
+_EOF
+
+# Execute
+USER_ID=$(id -u)
+docker run -ti \
+  --rm \
+  --user $USER_ID \
+  --volume $PWD:/data \
+  foilen/database-tools \
+    mongodb-create-manage --connectionConfig /data/login.json --outputFile /data/out.json
+    
+cat out.json
+```

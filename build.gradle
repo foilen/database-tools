@@ -34,6 +34,7 @@ dependencies {
   
   // Databases
   compile "org.mariadb.jdbc:mariadb-java-client:$dbMariadbVersion"
+  compile "org.mongodb:mongodb-driver:$dbMongodbVersion"
   
   // Spring
   compile "org.springframework.data:spring-data-jdbc:$springDataJdbcVersion"

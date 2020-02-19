@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 
 import com.foilen.databasetools.connection.JdbcUriConfigConnection;
-import com.foilen.databasetools.manage.exception.RetryLaterExceptionManager;
+import com.foilen.databasetools.manage.exception.RetryLaterException;
 import com.foilen.databasetools.queries.MariadbQueries;
 import com.foilen.smalltools.filesystemupdatewatcher.handler.OneFileUpdateNotifyer;
 import com.foilen.smalltools.listscomparator.ListComparatorHandler;
@@ -268,7 +268,7 @@ public class MariadbManageProcess extends AbstractBasics implements Runnable {
             applyAllDatabases(queries, mariadbManagerConfig.getDatabases());
             applyAllUsersAndGrants(queries, mariadbManagerConfig.getUsersToIgnore(), mariadbManagerConfig.getUsersPermissions());
         } catch (CannotGetJdbcConnectionException e) {
-            throw new RetryLaterExceptionManager("Could not connect", 15000, e);
+            throw new RetryLaterException("Could not connect", 15000, e);
         }
 
     }
@@ -326,7 +326,7 @@ public class MariadbManageProcess extends AbstractBasics implements Runnable {
                     lastExecution = System.currentTimeMillis();
                     execute();
 
-                } catch (RetryLaterExceptionManager e) {
+                } catch (RetryLaterException e) {
                     logger.warn("Problem managing: {}. Will retry in {} seconds", e.getMessage(), e.getRetryInMs());
                     retry = true;
                     process.set(true);

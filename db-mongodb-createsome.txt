@@ -1,0 +1,62 @@
+# Go inside
+docker exec -it mongo mongo 'mongodb://root:ABC@localhost:27017/'
+
+# Roles in admin
+use admin
+db.createRole(
+   {
+     role: "all_find",
+     privileges: [
+       {
+         actions: [ "find" ],
+         resource: { db: "", collection: "" }
+       }
+     ],
+     roles: []
+   }
+)
+db.createRole(
+   {
+     role: "all_insert",
+     privileges: [
+       {
+         actions: [ "insert" ],
+         resource: { db: "", collection: "" }
+       }
+     ],
+     roles: []
+   }
+)
+db.createRole(
+   {
+     role: "cluster_and_db_op",
+     privileges: [
+       { resource: { cluster: true }, actions: [ "killop", "inprog" ] },
+       { resource: { db: "", collection: "" }, actions: [ "killCursors" ] }
+     ],
+     roles: []
+   }
+)
+db.createRole(
+   {
+     role: "specific_db",
+     privileges: [
+     	{ resource: { db: "yo", collection: "" }, actions: [ "find" ] },
+     	{ resource: { db: "ya", collection: "" }, actions: [ "find" ] }
+     ],
+     roles: []
+   }
+)
+
+# Roles in another db
+use yo
+db.createRole(
+   {
+     role: "inside_db",
+     privileges: [
+     	{ resource: { db: "yo", collection: "a" }, actions: [ "find" ] },
+     	{ resource: { db: "yo", collection: "b" }, actions: [ "find" ] },
+     ],
+     roles: []
+   }
+)

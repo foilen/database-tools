@@ -9,18 +9,18 @@
  */
 package com.foilen.databasetools.manage.exception;
 
-public class RetryLaterExceptionManager extends RuntimeException {
+public class RetryLaterException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
     private long retryInMs;
 
-    public RetryLaterExceptionManager(String message, long retryInMs) {
+    public RetryLaterException(String message, long retryInMs) {
         super(message);
         this.retryInMs = retryInMs;
     }
 
-    public RetryLaterExceptionManager(String message, long retryInMs, Throwable cause) {
+    public RetryLaterException(String message, long retryInMs, Throwable cause) {
         super(message, cause);
         this.retryInMs = retryInMs;
     }

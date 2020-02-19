@@ -20,6 +20,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import com.foilen.databasetools.manage.Command;
 import com.foilen.databasetools.manage.MariadbCreateManageConfigCommand;
 import com.foilen.databasetools.manage.MariadbManageCommand;
+import com.foilen.databasetools.manage.MongodbCreateManageConfigCommand;
 import com.foilen.smalltools.JavaEnvironmentValues;
 import com.foilen.smalltools.tools.AbstractBasics;
 import com.foilen.smalltools.tools.ApplicationResourceUsageTools;
@@ -35,7 +36,8 @@ public class Application extends AbstractBasics {
 
     private final List<Command<?>> commands = Arrays.asList( //
             new MariadbCreateManageConfigCommand(), //
-            new MariadbManageCommand() //
+            new MariadbManageCommand(), //
+            new MongodbCreateManageConfigCommand() //
     );
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

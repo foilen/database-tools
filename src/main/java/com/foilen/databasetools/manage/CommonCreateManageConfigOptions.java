@@ -14,7 +14,7 @@ import org.kohsuke.args4j.Option;
 /**
  * The arguments to pass to the application.
  */
-public class MariadbCreateManageConfigOptions {
+public class CommonCreateManageConfigOptions {
 
     @Option(name = "--connectionConfig", usage = "The config files that contains the connection information")
     private String connectionConfig;

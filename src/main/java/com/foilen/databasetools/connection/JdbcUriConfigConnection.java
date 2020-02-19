@@ -10,10 +10,11 @@
 package com.foilen.databasetools.connection;
 
 import com.foilen.smalltools.tools.AbstractBasics;
+import com.foilen.smalltools.tools.JdbcUriTools;
 
 public class JdbcUriConfigConnection extends AbstractBasics {
 
-    private String jdbcUri = "jdbc:mysql://localhost:3306/";
+    private String jdbcUri;
 
     public JdbcUriConfigConnection() {
     }
@@ -30,28 +31,21 @@ public class JdbcUriConfigConnection extends AbstractBasics {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("MariadbConfigConnection [jdbcUri=");
+        builder.append("JdbcUriConfigConnection [jdbcUri=");
 
-        boolean asIs = false;
         if (jdbcUri == null) {
-            asIs = true;
+            builder.append(jdbcUri);
         } else {
 
-            int passwordPos = jdbcUri.indexOf("password=");
-            if (passwordPos == -1) {
-                asIs = true;
-            } else {
-                int endPos = jdbcUri.indexOf("&", passwordPos);
-                if (endPos == -1) {
-                    endPos = jdbcUri.length();
-                }
-                String password = jdbcUri.substring(passwordPos + 9, endPos);
-                builder.append(jdbcUri.replace(password, "*****"));
+            JdbcUriTools ju = new JdbcUriTools(jdbcUri);
+            if (ju.getPassword() != null) {
+                ju.setPassword("*****");
             }
-        }
+            if (ju.getOptions().containsKey("password")) {
+                ju.getOptions().put("password", "*****");
+            }
 
-        if (asIs) {
-            builder.append(jdbcUri);
+            builder.append(ju.toUri());
         }
 
         builder.append("]");

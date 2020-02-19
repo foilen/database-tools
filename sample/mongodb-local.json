@@ -1,0 +1,5 @@
+{
+	"connection": {
+		"jdbcUri": "jdbc:mongodb://root:ABC@localhost:27017/"
+	}
+}

@@ -32,7 +32,9 @@ import com.mongodb.client.MongoDatabase;
 
 public class MongodbQueries extends AbstractBasics {
 
-    private static final Set<String> SYSTEM_DATABASES = new HashSet<>(Arrays.asList("admin", "config", "local"));
+    private static final String DB_ADMIN = "admin";
+
+    private static final Set<String> SYSTEM_DATABASES = new HashSet<>(Arrays.asList(DB_ADMIN, "config", "local"));
 
     private MongoClient mongoClient;
 
@@ -61,7 +63,8 @@ public class MongodbQueries extends AbstractBasics {
         logger.info("Get roles list");
         List<MongodbFlatRole> flatRoles = new ArrayList<>();
 
-        for (String databaseName : mongoClient.listDatabaseNames()) {
+        // Find all roles
+        for (String databaseName : mongoClient.getDatabase(DB_ADMIN).getCollection("system.roles").distinct("db", String.class)) {
             flatRoles.addAll(rolesList(databaseName));
         }
 
@@ -142,7 +145,7 @@ public class MongodbQueries extends AbstractBasics {
         logger.info("Get users list");
         List<MongodbManagerConfigUserAndRoles> userAndRoles = new ArrayList<>();
 
-        for (String databaseName : mongoClient.listDatabaseNames()) {
+        for (String databaseName : mongoClient.getDatabase(DB_ADMIN).getCollection("system.users").distinct("db", String.class)) {
             userAndRoles.addAll(usersList(databaseName));
         }
 

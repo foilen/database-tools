@@ -10,9 +10,14 @@
 package com.foilen.databasetools.manage.mongodb.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class MongodbFlatPrivilege {
+import com.foilen.smalltools.tools.AbstractBasics;
+import com.foilen.smalltools.tools.StringTools;
+
+public class MongodbFlatPrivilege extends AbstractBasics implements Comparable<MongodbFlatPrivilege> {
 
     private String database;
     private String collection;
@@ -25,6 +30,40 @@ public class MongodbFlatPrivilege {
         this.collection = collection;
         this.cluster = cluster;
         this.actions = actions;
+    }
+
+    @Override
+    public int compareTo(MongodbFlatPrivilege o) {
+
+        int result = 0;
+
+        // Cluster
+        if (this.cluster == null) {
+            if (o.cluster == null) {
+                result = 0;
+            } else {
+                result = -1;
+            }
+        } else if (o.cluster == null) {
+            result = 1;
+        } else if (this.cluster == o.cluster) {
+            result = 0;
+        } else {
+            result = 1;
+        }
+
+        // database
+        if (result == 0) {
+            result = StringTools.safeComparisonNullFirst(this.database, o.database);
+        }
+
+        // collection
+        if (result == 0) {
+            result = StringTools.safeComparisonNullFirst(this.collection, o.collection);
+        }
+
+        return result;
+
     }
 
     public List<String> getActions() {
@@ -57,6 +96,32 @@ public class MongodbFlatPrivilege {
 
     public void setDatabase(String database) {
         this.database = database;
+    }
+
+    public Map<String, Object> toResource() {
+        Map<String, Object> resource = new HashMap<String, Object>();
+        if (database != null) {
+            resource.put("db", database);
+        }
+        if (collection != null) {
+            resource.put("collection", collection);
+        }
+        if (cluster != null) {
+            resource.put("cluster", cluster);
+        }
+        return resource;
+    }
+
+    public String toResourceString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("MongodbFlatPrivilege [database=");
+        builder.append(database);
+        builder.append(", collection=");
+        builder.append(collection);
+        builder.append(", cluster=");
+        builder.append(cluster);
+        builder.append("]");
+        return builder.toString();
     }
 
 }

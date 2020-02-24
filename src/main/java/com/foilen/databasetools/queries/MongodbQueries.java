@@ -11,6 +11,7 @@ package com.foilen.databasetools.queries;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -43,20 +44,54 @@ public class MongodbQueries extends AbstractBasics {
         mongoClient = new MongoClient(new MongoClientURI(configConnection.getJdbcUri().replace("jdbc:", "")));
     }
 
-    public void databaseCreate(String database) {
-        logger.info("Create database {}", database);
-        // TODO - Mongo databaseCreate
-    }
+    public void databaseRemove(String database) {
+        logger.info("[REMOVE] Database {}", database);
 
-    public void databaseDelete(String database) {
-        logger.info("Delete database {}", database);
-        // TODO - Mongo databaseDelete
+        mongoClient.getDatabase(database).drop();
     }
 
     public List<String> databasesListNonSystem() {
         return StreamSupport.stream(mongoClient.listDatabaseNames().spliterator(), false) //
                 .filter(d -> !SYSTEM_DATABASES.contains(d)) //
                 .collect(Collectors.toList());
+    }
+
+    public void roleCreate(String roleDatabase, String roleName) {
+        logger.info("[CREATE] Role {} / {}", roleDatabase, roleName);
+
+        mongoClient.getDatabase(roleDatabase).runCommand(new Document("createRole", roleName) //
+                .append("roles", Collections.emptyList()) //
+                .append("privileges", Collections.emptyList()) //
+        );
+    }
+
+    public void roleRemove(String roleDatabase, String roleName) {
+        logger.info("[REMOVE] Role {} / {}", roleDatabase, roleName);
+
+        mongoClient.getDatabase(roleDatabase).runCommand(new Document("dropRole", roleName));
+    }
+
+    public void rolePrivilegeAdd(String roleDatabase, String roleName, MongodbFlatPrivilege privilege, List<String> actionsToAdd) {
+        logger.info("[ADD] For role {} / {} add privilege {} actions {}", roleDatabase, roleName, privilege, actionsToAdd);
+
+        mongoClient.getDatabase(roleDatabase).runCommand(new Document("grantPrivilegesToRole", roleName) //
+                .append("privileges", Arrays.asList( //
+                        new Document("resource", privilege.toResource()).append("actions", actionsToAdd) //
+                ) //
+                ) //
+        );
+
+    }
+
+    public void rolePrivilegeRemove(String roleDatabase, String roleName, MongodbFlatPrivilege privilege, List<String> actionsToRemove) {
+        logger.info("[REMOVE] For role {} / {} remove privilege {} actions {}", roleDatabase, roleName, privilege, actionsToRemove);
+
+        mongoClient.getDatabase(roleDatabase).runCommand(new Document("revokePrivilegesFromRole", roleName) //
+                .append("privileges", Arrays.asList( //
+                        new Document("resource", privilege.toResource()).append("actions", actionsToRemove) //
+                ) //
+                ) //
+        );
     }
 
     public List<MongodbFlatRole> rolesList() {
@@ -101,44 +136,44 @@ public class MongodbQueries extends AbstractBasics {
         return flatRoles;
     }
 
-    public void userCreate(String user) {
-        logger.info("Create user {}", user);
-        // TODO - Mongo userCreate
+    public void userCreate(String database, String user, String password) {
+        logger.info("[CREATE] User {} / {}", database, user);
+
+        mongoClient.getDatabase(database).runCommand(new Document("createUser", user).append("pwd", password).append("roles", Collections.emptyList()));
     }
 
-    public void userDelete(String user) {
-        logger.info("Delete user {}", user);
-        // TODO - Mongo userDelete
+    public void userRemove(String database, String user) {
+        logger.info("[REMOVE] User {} / {}", database, user);
+
+        mongoClient.getDatabase(database).runCommand(new Document("dropUser", user));
     }
 
-    public void userPasswordUpdate(String user, String password) {
-        logger.info("Update user password {}", user);
-        // TODO - Mongo userPasswordUpdate
+    public void userPasswordUpdate(String database, String user, String password) {
+        logger.info("[UPDATE] User password {} / {}", database, user);
+
+        mongoClient.getDatabase(database).runCommand(new Document("updateUser", user).append("pwd", password));
     }
 
-    public void userPasswordUpdateHash(String user, String hashedPassword) {
-        logger.info("Update user hashed password {}", user);
-        // TODO - Mongo userPasswordUpdateHash
+    public void userRoleGrant(String userDatabase, String userName, String roleDatabase, String roleName) {
+        logger.info("[ADD] Grant user {} / {} role {} / {}", userDatabase, userName, roleDatabase, roleName);
+
+        mongoClient.getDatabase(userDatabase).runCommand(new Document("grantRolesToUser", userName) //
+                .append("roles", Arrays.asList( //
+                        new Document("role", roleName).append("db", roleDatabase) //
+                ) //
+                ) //
+        );
     }
 
-    public void userPrivilegeDatabaseGrant(String user, String database, String privilege) {
-        logger.info("Grant for user {} on database {} the privilege {}", user, database, privilege);
-        // TODO - Mongo userPrivilegeDatabaseGrant
-    }
+    public void userRoleRevoke(String userDatabase, String userName, String roleDatabase, String roleName) {
+        logger.info("[REMOVE] Revoke user {} / {} role {} / {}", userDatabase, userName, roleDatabase, roleName);
 
-    public void userPrivilegeDatabaseRevoke(String user, String database, String privilege) {
-        logger.info("Revoke for user {} on database {} the privilege {}", user, database, privilege);
-        // TODO - Mongo userPrivilegeDatabaseRevoke
-    }
-
-    public void userPrivilegeGlobalGrant(String user, String privilege) {
-        logger.info("Grant for user {} globally the privilege {}", user, privilege);
-        // TODO - Mongo userPrivilegeGlobalGrant
-    }
-
-    public void userPrivilegeGlobalRevoke(String user, String privilege) {
-        logger.info("Revoke for user {} globally the privilege {}", user, privilege);
-        // TODO - Mongo userPrivilegeGlobalRevoke
+        mongoClient.getDatabase(userDatabase).runCommand(new Document("revokeRolesFromUser", userName) //
+                .append("roles", Arrays.asList( //
+                        new Document("role", roleName).append("db", roleDatabase) //
+                ) //
+                ) //
+        );
     }
 
     public List<MongodbManagerConfigUserAndRoles> usersList() {

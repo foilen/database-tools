@@ -260,11 +260,11 @@ public class MariadbManageProcess extends AbstractBasics implements Runnable {
             logger.info("Loading config file {}", configFile);
             mariadbManagerConfig = JsonTools.readFromFile(configFile, MariadbManagerConfig.class);
 
-            // Change thread name
+            // Get the connection
             JdbcUriConfigConnection connection = mariadbManagerConfig.getConnection();
+            MariadbQueries queries = new MariadbQueries(connection);
 
             // Make the changes
-            MariadbQueries queries = new MariadbQueries(connection);
             applyAllDatabases(queries, mariadbManagerConfig.getDatabases());
             applyAllUsersAndGrants(queries, mariadbManagerConfig.getUsersToIgnore(), mariadbManagerConfig.getUsersPermissions());
         } catch (CannotGetJdbcConnectionException e) {

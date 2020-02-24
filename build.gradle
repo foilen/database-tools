@@ -1,6 +1,7 @@
 plugins {
   id 'application'
   id "com.jfrog.bintray" version "1.8.4"
+  id 'eclipse'
   id 'java'
   id 'maven'
   id 'maven-publish'
@@ -18,8 +19,14 @@ repositories {
   }
 }
 
-
 sourceCompatibility = 11
+
+eclipse {
+  classpath {
+    downloadSources = true
+    downloadJavadoc = true
+  }
+}
 
 dependencies {
 

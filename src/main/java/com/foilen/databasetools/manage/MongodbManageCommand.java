@@ -13,11 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 
-import com.foilen.databasetools.manage.mariadb.MariadbManageProcess;
+import com.foilen.databasetools.manage.mongodb.MongodbManageProcess;
 import com.foilen.smalltools.tools.AbstractBasics;
 import com.foilen.smalltools.tools.ExecutorsTools;
 
-public class MariadbManageCommand extends AbstractBasics implements Command<CommonManageOptions> {
+public class MongodbManageCommand extends AbstractBasics implements Command<CommonManageOptions> {
 
     @Override
     public void execute(CommonManageOptions options) {
@@ -25,7 +25,7 @@ public class MariadbManageCommand extends AbstractBasics implements Command<Comm
         // Start all managers
         List<Future<?>> futures = new ArrayList<>();
         options.getConfigFiles().forEach(configFile -> {
-            futures.add(ExecutorsTools.getCachedDaemonThreadPool().submit(new MariadbManageProcess(configFile, options.isKeepAlive())));
+            futures.add(ExecutorsTools.getCachedDaemonThreadPool().submit(new MongodbManageProcess(configFile, options.isKeepAlive())));
         });
 
         // Wait for all managers to end
@@ -39,7 +39,7 @@ public class MariadbManageCommand extends AbstractBasics implements Command<Comm
 
     @Override
     public String getCommandName() {
-        return "mariadb-manage";
+        return "mongodb-manage";
     }
 
     @Override

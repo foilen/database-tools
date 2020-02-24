@@ -10,11 +10,13 @@
 package com.foilen.databasetools.manage.mongodb;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.foilen.databasetools.connection.JdbcUriConfigConnection;
+import com.foilen.databasetools.manage.mongodb.model.MongodbFlatPrivilege;
 import com.foilen.databasetools.manage.mongodb.model.MongodbFlatRole;
 import com.foilen.smalltools.tools.AbstractBasics;
 import com.foilen.smalltools.tools.CollectionsTools;
@@ -45,6 +47,17 @@ public class MongodbManagerConfig extends AbstractBasics {
 
     public Map<String, List<MongodbManagerConfigDatabasePrivilege>> getGlobalDatabaseRoles() {
         return globalDatabaseRoles;
+    }
+
+    private MongodbFlatRole getOrCreateFlatRole(List<MongodbFlatRole> flatRoles, Map<String, MongodbFlatRole> flatRoleByFullName, String roleDatabase, String roleName) {
+        String fullName = roleName + "@" + roleDatabase;
+        MongodbFlatRole flatRole = flatRoleByFullName.get(fullName);
+        if (flatRole == null) {
+            flatRole = new MongodbFlatRole(roleDatabase, roleName);
+            flatRoles.add(flatRole);
+            flatRoleByFullName.put(fullName, flatRole);
+        }
+        return flatRole;
     }
 
     public Map<String, Map<String, List<MongodbManagerConfigCollectionPrivilege>>> getRoleByDatabase() {
@@ -117,6 +130,41 @@ public class MongodbManagerConfig extends AbstractBasics {
 
     public void setUsersToIgnore(List<MongodbManagerConfigUser> usersToIgnore) {
         this.usersToIgnore = usersToIgnore;
+    }
+
+    public List<MongodbFlatRole> toFlatRoles() {
+
+        List<MongodbFlatRole> flatRoles = new ArrayList<>();
+
+        Map<String, MongodbFlatRole> flatRoleByFullName = new HashMap<>();
+
+        // Cluster
+        globalClusterRoles.forEach((roleName, actions) -> {
+            MongodbFlatRole flatRole = getOrCreateFlatRole(flatRoles, flatRoleByFullName, "admin", roleName);
+            flatRole.getPrivileges().add(new MongodbFlatPrivilege(null, null, true, actions));
+        });
+
+        // Admin database
+        globalDatabaseRoles.forEach((roleName, databasePrivileges) -> {
+            MongodbFlatRole flatRole = getOrCreateFlatRole(flatRoles, flatRoleByFullName, "admin", roleName);
+            databasePrivileges.forEach(databasePrivilege -> {
+                flatRole.getPrivileges().add(new MongodbFlatPrivilege(databasePrivilege.getDatabase(), databasePrivilege.getCollection(), null, databasePrivilege.getActions()));
+            });
+        });
+
+        // By databases
+        roleByDatabase.forEach((roleDatabase, collectionPrivilegesByRole) -> {
+            collectionPrivilegesByRole.forEach((roleName, collectionPrivileges) -> {
+                MongodbFlatRole flatRole = getOrCreateFlatRole(flatRoles, flatRoleByFullName, roleDatabase, roleName);
+                collectionPrivileges.forEach(collectionPrivilege -> {
+                    flatRole.getPrivileges().add(new MongodbFlatPrivilege(roleDatabase, collectionPrivilege.getCollection(), null, collectionPrivilege.getActions()));
+                });
+            });
+        });
+
+        Collections.sort(flatRoles);
+
+        return flatRoles;
     }
 
 }

@@ -12,7 +12,10 @@ package com.foilen.databasetools.manage.mongodb.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MongodbFlatRole {
+import com.foilen.smalltools.tools.AbstractBasics;
+import com.google.common.collect.ComparisonChain;
+
+public class MongodbFlatRole extends AbstractBasics implements Comparable<MongodbFlatRole> {
 
     private String roleDatabase;
     private String roleName;
@@ -22,6 +25,14 @@ public class MongodbFlatRole {
     public MongodbFlatRole(String roleDatabase, String roleName) {
         this.roleDatabase = roleDatabase;
         this.roleName = roleName;
+    }
+
+    @Override
+    public int compareTo(MongodbFlatRole o) {
+        return ComparisonChain.start() //
+                .compare(this.roleDatabase, o.roleDatabase) //
+                .compare(this.roleName, o.roleName) //
+                .result();
     }
 
     public List<MongodbFlatPrivilege> getPrivileges() {
@@ -46,6 +57,10 @@ public class MongodbFlatRole {
 
     public void setRoleName(String roleName) {
         this.roleName = roleName;
+    }
+
+    public String toFullName() {
+        return roleName + "@" + roleDatabase;
     }
 
 }

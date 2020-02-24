@@ -17,7 +17,7 @@ import org.kohsuke.args4j.Option;
 /**
  * The arguments to pass to the application.
  */
-public class MariadbManageOptions {
+public class CommonManageOptions {
 
     @Option(name = "--keepAlive", usage = "Keep the manager alive and update when the file is updated", required = false)
     private boolean keepAlive = false;

@@ -21,6 +21,7 @@ import com.foilen.databasetools.manage.Command;
 import com.foilen.databasetools.manage.MariadbCreateManageConfigCommand;
 import com.foilen.databasetools.manage.MariadbManageCommand;
 import com.foilen.databasetools.manage.MongodbCreateManageConfigCommand;
+import com.foilen.databasetools.manage.MongodbManageCommand;
 import com.foilen.smalltools.JavaEnvironmentValues;
 import com.foilen.smalltools.tools.AbstractBasics;
 import com.foilen.smalltools.tools.ApplicationResourceUsageTools;
@@ -37,7 +38,8 @@ public class Application extends AbstractBasics {
     private final List<Command<?>> commands = Arrays.asList( //
             new MariadbCreateManageConfigCommand(), //
             new MariadbManageCommand(), //
-            new MongodbCreateManageConfigCommand() //
+            new MongodbCreateManageConfigCommand(), //
+            new MongodbManageCommand() //
     );
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

@@ -98,6 +98,25 @@ publishing {
       artifact javadocJar
       groupId 'com.foilen'
       artifactId 'database-tools'
+      
+      pom {
+        name = "Database Tools"
+        description = "This is an application to help manipulating databases"
+        url = "https://github.com/foilen/database-tools"
+        
+        licenses {
+          license {
+            name = "MIT"
+            url = "https://opensource.org/licenses/MIT"
+          }
+        }
+        
+        scm {
+          connection = "scm:git:git@github.com:foilen/database-tools.git"
+          url = "https://github.com/foilen/database-tools"
+        }
+        
+      }
     }
   }
 }

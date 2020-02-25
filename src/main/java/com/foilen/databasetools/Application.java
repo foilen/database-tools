@@ -86,7 +86,7 @@ public class Application extends AbstractBasics {
             }
             String commandName = arguments.remove(0);
             Optional<Command<?>> commandOptional = commands.stream().filter(c -> StringTools.safeEquals(commandName, c.getCommandName())).findFirst();
-            if (commandOptional.isEmpty()) {
+            if (!commandOptional.isPresent()) {
                 showUsage();
                 return;
             }

@@ -19,7 +19,7 @@ repositories {
   }
 }
 
-sourceCompatibility = 11
+sourceCompatibility = 8
 
 eclipse {
   classpath {

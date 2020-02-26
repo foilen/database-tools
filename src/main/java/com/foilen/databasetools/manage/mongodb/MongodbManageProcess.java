@@ -175,7 +175,9 @@ public class MongodbManageProcess extends AbstractBasics implements Runnable {
                         MongodbManagerConfigUserAndRoles desiredUserAndRoles = desiredUsersAndRolesByFullName.get(desired);
 
                         // Password
-                        queries.userPasswordUpdate(desiredUserAndRoles.getDatabase(), desiredUserAndRoles.getName(), desiredUserAndRoles.getPassword());
+                        if (desiredUserAndRoles.getPassword() != null) {
+                            queries.userPasswordUpdate(desiredUserAndRoles.getDatabase(), desiredUserAndRoles.getName(), desiredUserAndRoles.getPassword());
+                        }
 
                         // Roles
                         applyUserRoles(queries, desiredUserAndRoles.getDatabase(), desiredUserAndRoles.getName(), currentUserAndRoles.getRolesByDatabase(), desiredUserAndRoles.getRolesByDatabase());
@@ -195,9 +197,6 @@ public class MongodbManageProcess extends AbstractBasics implements Runnable {
 
                         MongodbManagerConfigUserAndRoles desiredUserAndRoles = desiredUsersAndRolesByFullName.get(desired);
                         queries.userCreate(desiredUserAndRoles.getDatabase(), desiredUserAndRoles.getName(), desiredUserAndRoles.getPassword());
-
-                        // Password
-                        queries.userPasswordUpdate(desiredUserAndRoles.getDatabase(), desiredUserAndRoles.getName(), desiredUserAndRoles.getPassword());
 
                         // Roles
                         applyUserRoles(queries, desiredUserAndRoles.getDatabase(), desiredUserAndRoles.getName(), new HashMap<>(), desiredUserAndRoles.getRolesByDatabase());

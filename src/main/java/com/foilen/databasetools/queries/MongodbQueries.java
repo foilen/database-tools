@@ -139,7 +139,11 @@ public class MongodbQueries extends AbstractBasics {
     public void userCreate(String database, String user, String password) {
         logger.info("[CREATE] User {} / {}", database, user);
 
-        mongoClient.getDatabase(database).runCommand(new Document("createUser", user).append("pwd", password).append("roles", Collections.emptyList()));
+        Document commandDocument = new Document("createUser", user).append("roles", Collections.emptyList());
+        if (password != null) {
+            commandDocument.append("pwd", password);
+        }
+        mongoClient.getDatabase(database).runCommand(commandDocument);
     }
 
     public void userRemove(String database, String user) {

@@ -11,6 +11,7 @@ package com.foilen.databasetools.manage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import com.foilen.databasetools.manage.mongodb.MongodbManageProcess;
@@ -32,6 +33,9 @@ public class MongodbManageCommand extends AbstractBasics implements Command<Comm
         futures.forEach(f -> {
             try {
                 f.get();
+            } catch (ExecutionException e) {
+                System.out.println("FAILURE");
+                System.exit(1);
             } catch (Exception e) {
             }
         });

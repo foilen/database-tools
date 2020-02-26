@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import com.foilen.databasetools.connection.JdbcUriConfigConnection;
+import com.foilen.databasetools.exception.ProblemException;
 import com.foilen.databasetools.manage.exception.RetryLaterException;
 import com.foilen.databasetools.manage.mongodb.model.MongodbFlatPrivilege;
 import com.foilen.databasetools.manage.mongodb.model.MongodbFlatRole;
@@ -392,6 +393,9 @@ public class MongodbManageProcess extends AbstractBasics implements Runnable {
 
                 } catch (Exception e) {
                     logger.error("Problem managing", e);
+                    if (!keepAlive) {
+                        throw new ProblemException("Killing the process");
+                    }
                 }
             }
 

@@ -65,12 +65,6 @@ public class MongodbQueries extends AbstractBasics {
         );
     }
 
-    public void roleRemove(String roleDatabase, String roleName) {
-        logger.info("[REMOVE] Role {} / {}", roleDatabase, roleName);
-
-        mongoClient.getDatabase(roleDatabase).runCommand(new Document("dropRole", roleName));
-    }
-
     public void rolePrivilegeAdd(String roleDatabase, String roleName, MongodbFlatPrivilege privilege, List<String> actionsToAdd) {
         logger.info("[ADD] For role {} / {} add privilege {} actions {}", roleDatabase, roleName, privilege, actionsToAdd);
 
@@ -92,6 +86,12 @@ public class MongodbQueries extends AbstractBasics {
                 ) //
                 ) //
         );
+    }
+
+    public void roleRemove(String roleDatabase, String roleName) {
+        logger.info("[REMOVE] Role {} / {}", roleDatabase, roleName);
+
+        mongoClient.getDatabase(roleDatabase).runCommand(new Document("dropRole", roleName));
     }
 
     public List<MongodbFlatRole> rolesList() {
@@ -146,16 +146,16 @@ public class MongodbQueries extends AbstractBasics {
         mongoClient.getDatabase(database).runCommand(commandDocument);
     }
 
-    public void userRemove(String database, String user) {
-        logger.info("[REMOVE] User {} / {}", database, user);
-
-        mongoClient.getDatabase(database).runCommand(new Document("dropUser", user));
-    }
-
     public void userPasswordUpdate(String database, String user, String password) {
         logger.info("[UPDATE] User password {} / {}", database, user);
 
         mongoClient.getDatabase(database).runCommand(new Document("updateUser", user).append("pwd", password));
+    }
+
+    public void userRemove(String database, String user) {
+        logger.info("[REMOVE] User {} / {}", database, user);
+
+        mongoClient.getDatabase(database).runCommand(new Document("dropUser", user));
     }
 
     public void userRoleGrant(String userDatabase, String userName, String roleDatabase, String roleName) {

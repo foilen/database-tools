@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.foilen.databasetools.connection.JdbcUriConfigConnection;
+import com.foilen.databasetools.exception.ProblemException;
 import com.foilen.databasetools.manage.mongodb.model.MongodbFlatPrivilege;
 import com.foilen.databasetools.manage.mongodb.model.MongodbFlatRole;
 import com.foilen.smalltools.tools.AbstractBasics;
@@ -24,14 +25,14 @@ import com.foilen.smalltools.tools.CollectionsTools;
 public class MongodbManagerConfig extends AbstractBasics {
 
     private JdbcUriConfigConnection connection = new JdbcUriConfigConnection();
-    private List<String> databases = new ArrayList<>();
-    private List<MongodbManagerConfigUser> usersToIgnore = new ArrayList<>();
+    private List<String> databases = null;
+    private List<MongodbManagerConfigUser> usersToIgnore = null;
 
-    private Map<String, List<String>> globalClusterRoles = new HashMap<>();
-    private Map<String, List<MongodbManagerConfigDatabasePrivilege>> globalDatabaseRoles = new HashMap<>();
-    private Map<String, Map<String, List<MongodbManagerConfigCollectionPrivilege>>> roleByDatabase = new HashMap<>();
+    private Map<String, List<String>> globalClusterRoles = null;
+    private Map<String, List<MongodbManagerConfigDatabasePrivilege>> globalDatabaseRoles = null;
+    private Map<String, Map<String, List<MongodbManagerConfigCollectionPrivilege>>> roleByDatabase = null;
 
-    private List<MongodbManagerConfigUserAndRoles> usersPermissions = new ArrayList<>();
+    private List<MongodbManagerConfigUserAndRoles> usersPermissions = null;
 
     public JdbcUriConfigConnection getConnection() {
         return connection;
@@ -133,6 +134,15 @@ public class MongodbManagerConfig extends AbstractBasics {
     }
 
     public List<MongodbFlatRole> toFlatRoles() {
+
+        if (!CollectionsTools.isAllItemNotNull(globalClusterRoles, globalDatabaseRoles, roleByDatabase)) {
+
+            if (CollectionsTools.isAnyItemNotNull(globalClusterRoles, globalDatabaseRoles, roleByDatabase)) {
+                throw new ProblemException("You need to define all roles or no roles. (e.g globalClusterRoles, globalDatabaseRoles, roleByDatabase)");
+            }
+
+            return null;
+        }
 
         List<MongodbFlatRole> flatRoles = new ArrayList<>();
 

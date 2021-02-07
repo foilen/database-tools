@@ -1,22 +1,16 @@
-plugins {
-  id 'application'
-  id "com.jfrog.bintray" version "1.8.4"
-  id 'eclipse'
-  id 'java'
-  id 'maven'
-  id 'maven-publish'
-}
+apply plugin: 'application'
+apply plugin: 'eclipse'
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 group = 'com.foilen'
 version = System.getenv('VERSION')?:'master-SNAPSHOT'
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 repositories {
   mavenLocal()
-  jcenter()
   mavenCentral()
-  maven {
-    url 'https://dl.bintray.com/foilen/maven'
-  }
 }
 
 sourceCompatibility = 8
@@ -68,60 +62,60 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
   from javadoc.destinationDir
 }
 
+application {
+  mainClassName = 'com.foilen.databasetools.Application'
+  applicationDefaultJvmArgs = ['-Xmx200m']
+}
+
 artifacts {
-  archives sourcesJar
-  archives javadocJar
+  archives javadocJar, sourcesJar
 }
 
-bintray {
-  user = System.getenv('BINTRAY_USER')
-  key = System.getenv('BINTRAY_KEY')
-
-  publish = true
-
-  pkg {
-    repo = 'maven'
-    userOrg = 'foilen'
-    name = 'com.foilen:database-tools'
-    licenses = ['MIT']
-    vcsUrl = 'https://github.com/foilen/database-tools'
-  }
-
-  publications = ['MyPublication']
+signing {
+  required { isReleaseVersion && gradle.taskGraph.hasTask(":uploadArchives") }
+  sign configurations.archives
 }
 
-publishing {
-  publications {
-    MyPublication(MavenPublication) {
-      from components.java
-      artifact sourcesJar
-      artifact javadocJar
-      groupId 'com.foilen'
-      artifactId 'database-tools'
-      
-      pom {
-        name = "Database Tools"
-        description = "This is an application to help manipulating databases"
-        url = "https://github.com/foilen/database-tools"
-        
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: System.getenv('OSSRH_USER'), password: System.getenv('OSSRH_PASS'))
+      }
+
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: System.getenv('OSSRH_USER'), password: System.getenv('OSSRH_PASS'))
+      }
+
+      pom.project {
+        name = "com.foilen:database-tools"
+        packaging 'jar'
+        artifactId 'com.foilen:database-tools'
+        description 'This is an application to help manipulating databases'
+        url 'https://github.com/foilen/com.foilen:database-tools'
+
+        scm {
+          connection = "scm:git:git@github.com:foilen/com.foilen:database-tools.git"
+          url = "https://github.com/foilen/com.foilen:database-tools"
+        }
+
         licenses {
           license {
             name = "MIT"
             url = "https://opensource.org/licenses/MIT"
           }
         }
-        
-        scm {
-          connection = "scm:git:git@github.com:foilen/database-tools.git"
-          url = "https://github.com/foilen/database-tools"
+
+        developers {
+          developer {
+            id 'foilen'
+            name 'Simon Levesque'
+            email 'simon@foilen.com'
+          }
         }
-        
       }
     }
   }
-}
-
-application {
-  mainClassName = 'com.foilen.databasetools.Application'
-  applicationDefaultJvmArgs = ['-Xmx200m']
 }

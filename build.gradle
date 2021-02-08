@@ -90,15 +90,15 @@ uploadArchives {
       }
 
       pom.project {
-        name = "com.foilen:database-tools"
+        name = "database-tools"
         packaging 'jar'
-        artifactId 'com.foilen:database-tools'
+        artifactId 'database-tools'
         description 'This is an application to help manipulating databases'
-        url 'https://github.com/foilen/com.foilen:database-tools'
+        url 'https://github.com/foilen/database-tools'
 
         scm {
-          connection = "scm:git:git@github.com:foilen/com.foilen:database-tools.git"
-          url = "https://github.com/foilen/com.foilen:database-tools"
+          connection = "scm:git:git@github.com:foilen/database-tools.git"
+          url = "https://github.com/foilen/database-tools"
         }
 
         licenses {

@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import org.bson.Document;
 
 import com.foilen.databasetools.connection.JdbcUriConfigConnection;
@@ -27,8 +29,6 @@ import com.foilen.databasetools.manage.mongodb.model.MongodbFlatPrivilege;
 import com.foilen.databasetools.manage.mongodb.model.MongodbFlatRole;
 import com.foilen.smalltools.tools.AbstractBasics;
 import com.foilen.smalltools.tools.CollectionsTools;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 
 public class MongodbQueries extends AbstractBasics {
@@ -37,11 +37,11 @@ public class MongodbQueries extends AbstractBasics {
 
     private static final Set<String> SYSTEM_DATABASES = new HashSet<>(Arrays.asList(DB_ADMIN, "config", "local"));
 
-    private MongoClient mongoClient;
+    private final MongoClient mongoClient;
 
     public MongodbQueries(JdbcUriConfigConnection configConnection) {
         logger.info("Will use {}", configConnection);
-        mongoClient = new MongoClient(new MongoClientURI(configConnection.getJdbcUri().replace("jdbc:", "")));
+        mongoClient = MongoClients.create(configConnection.getJdbcUri().replace("jdbc:", ""));
     }
 
     public void databaseRemove(String database) {
@@ -69,7 +69,7 @@ public class MongodbQueries extends AbstractBasics {
         logger.info("[ADD] For role {} / {} add privilege {} actions {}", roleDatabase, roleName, privilege, actionsToAdd);
 
         mongoClient.getDatabase(roleDatabase).runCommand(new Document("grantPrivilegesToRole", roleName) //
-                .append("privileges", Arrays.asList( //
+                .append("privileges", Collections.singletonList( //
                         new Document("resource", privilege.toResource()).append("actions", actionsToAdd) //
                 ) //
                 ) //
@@ -81,9 +81,9 @@ public class MongodbQueries extends AbstractBasics {
         logger.info("[REMOVE] For role {} / {} remove privilege {} actions {}", roleDatabase, roleName, privilege, actionsToRemove);
 
         mongoClient.getDatabase(roleDatabase).runCommand(new Document("revokePrivilegesFromRole", roleName) //
-                .append("privileges", Arrays.asList( //
-                        new Document("resource", privilege.toResource()).append("actions", actionsToRemove) //
-                ) //
+                .append("privileges", Collections.singletonList( //
+                                new Document("resource", privilege.toResource()).append("actions", actionsToRemove) //
+                        ) //
                 ) //
         );
     }
@@ -162,9 +162,9 @@ public class MongodbQueries extends AbstractBasics {
         logger.info("[ADD] Grant user {} / {} role {} / {}", userDatabase, userName, roleDatabase, roleName);
 
         mongoClient.getDatabase(userDatabase).runCommand(new Document("grantRolesToUser", userName) //
-                .append("roles", Arrays.asList( //
-                        new Document("role", roleName).append("db", roleDatabase) //
-                ) //
+                .append("roles", Collections.singletonList( //
+                                new Document("role", roleName).append("db", roleDatabase) //
+                        ) //
                 ) //
         );
     }
@@ -173,9 +173,9 @@ public class MongodbQueries extends AbstractBasics {
         logger.info("[REMOVE] Revoke user {} / {} role {} / {}", userDatabase, userName, roleDatabase, roleName);
 
         mongoClient.getDatabase(userDatabase).runCommand(new Document("revokeRolesFromUser", userName) //
-                .append("roles", Arrays.asList( //
-                        new Document("role", roleName).append("db", roleDatabase) //
-                ) //
+                .append("roles", Collections.singletonList( //
+                                new Document("role", roleName).append("db", roleDatabase) //
+                        ) //
                 ) //
         );
     }
@@ -202,7 +202,7 @@ public class MongodbQueries extends AbstractBasics {
             String userName = user.getString("user");
             MongodbManagerConfigUserAndRoles userAndRoles = new MongodbManagerConfigUserAndRoles(databaseName, userName);
             usersAndRoles.add(userAndRoles);
-            userAndRoles.setRolesByDatabase(new HashMap<String, List<String>>());
+            userAndRoles.setRolesByDatabase(new HashMap<>());
             for (Document role : user.getList("roles", Document.class)) {
                 CollectionsTools.getOrCreateEmptyArrayList(userAndRoles.getRolesByDatabase(), role.getString("db"), String.class) //
                         .add(role.getString("role"));

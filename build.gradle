@@ -1,8 +1,11 @@
-apply plugin: 'application'
-apply plugin: 'eclipse'
-apply plugin: 'java-library'
-apply plugin: 'maven-publish'
-apply plugin: 'signing'
+plugins {
+  id 'application'
+  id 'eclipse'
+  id 'java-library'
+  id 'maven-publish'
+  id 'signing'
+  id "com.github.ben-manes.versions" version "$versionsVersion"
+}
 
 group = 'com.foilen'
 version = System.getenv('VERSION')?:'master-SNAPSHOT'
@@ -27,25 +30,25 @@ dependencies {
   // Misc
   api "args4j:args4j:$argsVersion"
   api "ch.qos.logback:logback-classic:$logbackVersion"
-  api 'com.fasterxml.jackson.core:jackson-databind:2.9.1'
+  api 'com.fasterxml.jackson.core:jackson-databind:2.13.2.2'
   api "com.foilen:jl-smalltools:$smalltoolsVersion"
-  api "com.google.guava:guava:27.0.1-jre"
-  api 'org.apache.commons:commons-lang3:3.6'
-  api 'org.slf4j:slf4j-api:1.7.25'
+  api "com.google.guava:guava:31.1-jre"
+  api 'org.apache.commons:commons-lang3:3.12.0'
+  api 'org.slf4j:slf4j-api:1.7.36'
   
   // Databases
   api "org.mariadb.jdbc:mariadb-java-client:$dbMariadbVersion"
-  api "org.mongodb:mongodb-driver:$dbMongodbVersion"
+  api "org.mongodb:mongodb-driver-sync:$dbMongodbVersion"
   
   // Spring
   api "org.springframework.data:spring-data-jdbc:$springDataJdbcVersion"
   
   // Test
-  testCompileOnly 'junit:junit:4.13'
+  testCompileOnly 'junit:junit:4.13.2'
   testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
   testRuntimeOnly "org.junit.vintage:junit-vintage-engine:$junitVersion"
-  testImplementation 'org.junit.platform:junit-platform-commons:1.5.2'
-  testImplementation 'org.junit.platform:junit-platform-engine:1.5.2'
+  testImplementation 'org.junit.platform:junit-platform-commons:1.8.2'
+  testImplementation 'org.junit.platform:junit-platform-engine:1.8.2'
 }
 
 test {

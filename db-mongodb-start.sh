@@ -13,5 +13,5 @@ docker run \
   --name $INSTANCE \
   -p 27017:27017 \
   -v $PASS_FILE:/newPass \
-  -d foilen/fcloud-docker-mongodb:4.2.3-2 \
+  -d foilen/fcloud-docker-mongodb:5.0.3-1 \
   /mongodb-start.sh

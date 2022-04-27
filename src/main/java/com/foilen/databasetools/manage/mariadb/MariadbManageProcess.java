@@ -327,7 +327,7 @@ public class MariadbManageProcess extends AbstractBasics implements Runnable {
                     execute();
 
                 } catch (RetryLaterException e) {
-                    logger.warn("Problem managing: {}. Will retry in {} seconds", e.getMessage(), e.getRetryInMs());
+                    logger.warn("Problem managing: {}. Will retry in {} ms", e.getMessage(), e.getRetryInMs());
                     retry = true;
                     process.set(true);
                     try {

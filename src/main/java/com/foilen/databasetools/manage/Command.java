@@ -13,6 +13,8 @@ public interface Command<O> {
 
     /**
      * The command's code.
+     *
+     * @param options the options
      */
     void execute(O options);
 

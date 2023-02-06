@@ -1,7 +1,7 @@
 /*
     Database Tools
     https://github.com/foilen/database-tools
-    Copyright (c) 2020-2022 Foilen (https://foilen.com)
+    Copyright (c) 2020-2023 Foilen (https://foilen.com)
 
     The MIT License
     http://opensource.org/licenses/MIT

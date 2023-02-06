@@ -100,3 +100,69 @@ docker run -ti \
     
 cat out.json
 ```
+
+## Manage the database
+
+```
+# Create the configuration details file
+cat > config.json << _EOF
+{
+  "connection" : {
+    "jdbcUri" : "jdbc:mongodb://root:ABC@172.17.0.1:27017/"
+  },
+  "databases" : [ "yo" ],
+  "usersToIgnore": [ 
+    { "database": "admin", "name": "root" }
+  ],
+  "globalClusterRoles" : {
+    "cluster_and_db_op" : [ "inprog", "killop" ]
+  },
+  "globalDatabaseRoles" : {
+    "all_insert" : [ 
+      { "database" : "", "collection" : "", "actions" : [ "insert" ] }
+    ],
+    "all_find" : [ 
+      { "database" : "", "collection" : "", "actions" : [ "find" ] }
+    ],
+    "cluster_and_db_op" : [ 
+      { "database" : "", "collection" : "", "actions" : [ "killCursors" ] }
+    ],
+    "specific_db" : [ 
+      { "database" : "ya", "collection" : "", "actions" : [ "find" ] }, 
+      { "database" : "yo", "collection" : "", "actions" : [ "find" ] }
+    ]
+  },
+  "roleByDatabase" : {
+    "yo" : {
+      "inside_db" : [ 
+        { "collection" : "a", "actions" : [ "find" ] }, 
+        { "collection" : "b", "actions" : [ "find" ] }
+      ]
+    }
+  },
+  "usersPermissions" : [
+    {
+      "database" : "admin", "name" : "mySuper", "password" : "qwerty", 
+      "rolesByDatabase" : {
+        "admin" : [ "root" ]
+      }
+    }, {
+      "database" : "yo", "name" : "kind", "password" : "qwerty", 
+      "rolesByDatabase" : {
+        "yo" : [ "inside_db" ],
+        "admin" : [ "specific_db" ]
+      }
+    } 
+  ]
+}
+_EOF
+
+# Execute
+USER_ID=$(id -u)
+docker run -ti \
+  --rm \
+  --user $USER_ID \
+  --volume $PWD:/data \
+  foilen/database-tools \
+    mongodb-manage --configFiles /data/config.json --keepAlive
+```

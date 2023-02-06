@@ -1,6 +1,5 @@
 plugins {
   id 'application'
-  id 'eclipse'
   id 'java-library'
   id 'maven-publish'
   id 'signing'
@@ -16,25 +15,18 @@ repositories {
   mavenCentral()
 }
 
-sourceCompatibility = 8
-
-eclipse {
-  classpath {
-    downloadSources = true
-    downloadJavadoc = true
-  }
-}
+sourceCompatibility = 11
 
 dependencies {
 
   // Misc
   api "args4j:args4j:$argsVersion"
   api "ch.qos.logback:logback-classic:$logbackVersion"
-  api 'com.fasterxml.jackson.core:jackson-databind:2.13.2.2'
-  api "com.foilen:jl-smalltools:$smalltoolsVersion"
+  api 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
+  api "com.foilen:jl-smalltools-main:$smalltoolsVersion"
   api "com.google.guava:guava:31.1-jre"
   api 'org.apache.commons:commons-lang3:3.12.0'
-  api 'org.slf4j:slf4j-api:1.7.36'
+  api 'org.slf4j:slf4j-api:2.0.6'
   
   // Databases
   api "org.mariadb.jdbc:mariadb-java-client:$dbMariadbVersion"
@@ -47,8 +39,8 @@ dependencies {
   testCompileOnly 'junit:junit:4.13.2'
   testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
   testRuntimeOnly "org.junit.vintage:junit-vintage-engine:$junitVersion"
-  testImplementation 'org.junit.platform:junit-platform-commons:1.8.2'
-  testImplementation 'org.junit.platform:junit-platform-engine:1.8.2'
+  testImplementation "org.junit.platform:junit-platform-commons:$junitPlatformVersion"
+  testImplementation "org.junit.platform:junit-platform-engine:$junitPlatformVersion"
 }
 
 test {

@@ -2,6 +2,18 @@
 
 This is an application to help manipulating databases.
 
+# End-to-end test scripts
+
+The `test-mariadb.sh` and `test-mongodb.sh` scripts run the full flow against a
+local database in Docker:
+
+1. Build a local release (docker image `foilen/database-tools:<branch>-SNAPSHOT`)
+2. Start a local database docker instance
+3. Generate a manage config from the running database (`*-create-manage`)
+4. Apply that config back using the freshly built docker image (`*-manage`)
+
+The examples below mirror what those scripts do.
+
 # MariaDB
 
 ## Create a manage configuration
@@ -11,21 +23,21 @@ This is an application to help manipulating databases.
 cat > login.json << _EOF
 {
   "connection": {
-    "jdbcUri": "jdbc:mariadb://172.17.0.1:3306/mysql?user=root&password=ABC"
+    "jdbcUri": "jdbc:mariadb://172.17.0.1:13306/mysql?user=root&password=ABC"
   }
 }
 _EOF
 
 # Execute
 USER_ID=$(id -u)
-docker run -ti \
+docker run -i \
   --rm \
   --user $USER_ID \
   --volume $PWD:/data \
   foilen/database-tools \
-    mariadb-create-manage --connectionConfig /data/login.json --outputFile /data/out.json
-    
-cat out.json
+    mariadb-create-manage --connectionConfig /data/login.json --outputFile /data/config.json
+
+cat config.json
 ```
 
 ## Manage the database
@@ -35,7 +47,7 @@ cat out.json
 cat > config.json << _EOF
 {
   "connection": {
-    "jdbcUri": "jdbc:mariadb://172.17.0.1:3306/mysql?user=root&password=ABC"
+    "jdbcUri": "jdbc:mariadb://172.17.0.1:13306/mysql?user=root&password=ABC"
   },
   "databases" : [ "potato" ],
   "usersToIgnore" : [ {
@@ -67,12 +79,12 @@ _EOF
 
 # Execute
 USER_ID=$(id -u)
-docker run -ti \
+docker run -i \
   --rm \
   --user $USER_ID \
   --volume $PWD:/data \
   foilen/database-tools \
-    mariadb-manage --configFiles /data/config.json --keepAlive
+    mariadb-manage --configFiles /data/config.json
 ```
 
 # MongoDB
@@ -84,21 +96,21 @@ docker run -ti \
 cat > login.json << _EOF
 {
   "connection": {
-    "jdbcUri": "jdbc:mongodb://root:ABC@172.17.0.1:27017"
+    "jdbcUri": "jdbc:mongodb://root:ABC@172.17.0.1:47017/"
   }
 }
 _EOF
 
 # Execute
 USER_ID=$(id -u)
-docker run -ti \
+docker run -i \
   --rm \
   --user $USER_ID \
   --volume $PWD:/data \
   foilen/database-tools \
-    mongodb-create-manage --connectionConfig /data/login.json --outputFile /data/out.json
-    
-cat out.json
+    mongodb-create-manage --connectionConfig /data/login.json --outputFile /data/config.json
+
+cat config.json
 ```
 
 ## Manage the database
@@ -108,7 +120,7 @@ cat out.json
 cat > config.json << _EOF
 {
   "connection" : {
-    "jdbcUri" : "jdbc:mongodb://root:ABC@172.17.0.1:27017/"
+    "jdbcUri" : "jdbc:mongodb://root:ABC@172.17.0.1:47017/"
   },
   "databases" : [ "yo" ],
   "usersToIgnore": [ 
@@ -159,10 +171,10 @@ _EOF
 
 # Execute
 USER_ID=$(id -u)
-docker run -ti \
+docker run -i \
   --rm \
   --user $USER_ID \
   --volume $PWD:/data \
   foilen/database-tools \
-    mongodb-manage --configFiles /data/config.json --keepAlive
+    mongodb-manage --configFiles /data/config.json
 ```

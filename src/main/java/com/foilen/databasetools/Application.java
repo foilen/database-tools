@@ -1,12 +1,3 @@
-/*
-    Database Tools
-    https://github.com/foilen/database-tools
-    Copyright (c) 2020-2025 Foilen (https://foilen.com)
-
-    The MIT License
-    http://opensource.org/licenses/MIT
-
- */
 package com.foilen.databasetools;
 
 import java.util.ArrayList;

@@ -15,32 +15,28 @@ repositories {
   mavenCentral()
 }
 
-sourceCompatibility = 11
-
 dependencies {
 
   // Misc
   api "args4j:args4j:$argsVersion"
   api "ch.qos.logback:logback-classic:$logbackVersion"
-  api 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
+  api "com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion"
   api "com.foilen:jl-smalltools-main:$smalltoolsVersion"
-  api "com.google.guava:guava:31.1-jre"
-  api 'org.apache.commons:commons-lang3:3.12.0'
-  api 'org.slf4j:slf4j-api:2.0.6'
-  
+  api "com.google.guava:guava:$guavaVersion"
+  api "org.apache.commons:commons-lang3:$commonsLang3Version"
+  api "org.slf4j:slf4j-api:$slf4jVersion"
+
   // Databases
   api "org.mariadb.jdbc:mariadb-java-client:$dbMariadbVersion"
   api "org.mongodb:mongodb-driver-sync:$dbMongodbVersion"
-  
+
   // Spring
   api "org.springframework.data:spring-data-jdbc:$springDataJdbcVersion"
-  
+
   // Test
-  testCompileOnly 'junit:junit:4.13.2'
   testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
-  testRuntimeOnly "org.junit.vintage:junit-vintage-engine:$junitVersion"
-  testImplementation "org.junit.platform:junit-platform-commons:$junitPlatformVersion"
-  testImplementation "org.junit.platform:junit-platform-engine:$junitPlatformVersion"
+  testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+  testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
 test {
@@ -48,6 +44,8 @@ test {
 }
 
 java {
+  sourceCompatibility = JavaVersion.toVersion(javaVersion)
+  targetCompatibility = JavaVersion.toVersion(javaVersion)
   withJavadocJar()
   withSourcesJar()
 }
@@ -60,7 +58,7 @@ application {
 publishing {
   repositories {
     maven {
-      url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+      url = "https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/"
       credentials {
         username = System.getenv('OSSRH_USER')
         password = System.getenv('OSSRH_PASS')
